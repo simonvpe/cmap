@@ -1,0 +1,9 @@
+pipeline:
+  build:
+    image: gcc-build
+    commands:
+      - mkdir build
+      - cd build
+      - cmake ..
+      - make
+      - ./test/tests
