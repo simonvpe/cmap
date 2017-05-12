@@ -28,6 +28,8 @@ constexpr auto map(auto key, auto value) {
   };
 }
 
+// There is really no need for operator overloading here, it's just that I have
+// no idea of how to do the fold expression in `make_map()` with a "regular" function
 constexpr auto operator<<(auto left, auto right) {
   return [left,right](auto key) {
       const auto [lresult, lvalue] = left(key);
