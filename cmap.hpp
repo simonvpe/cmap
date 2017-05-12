@@ -22,9 +22,7 @@ class root {
   public:
   constexpr root(T _chain) : chain(_chain) {}
   constexpr auto operator[](auto key) const {
-    const auto lookup  = chain(key);
-    const auto success = lookup.first;
-    const auto value   = lookup.second;
+    const auto [success, value]  = chain(key);
     return success ? value : throw std::out_of_range("No such key!");
   }
 
