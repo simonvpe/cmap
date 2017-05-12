@@ -1,8 +1,7 @@
 namespace cmap {
 
-template<typename TKey, typename TValue>
-constexpr auto map(TKey key, TValue value) {
-  return [key,value](TKey _key) {
+constexpr auto map(auto key, auto value) {
+  return [key,value](auto _key) {
     return std::pair(_key == key, value);
   };
 }
