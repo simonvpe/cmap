@@ -3,8 +3,9 @@
 
 using cmap::make_map;
 using cmap::map;
+using cmap::join;
 
-SCENARIO("Compile time mapping") {
+SCENARIO("Basic mapping") {
   GIVEN("a map of int -> int") {
     constexpr auto lookup = make_map(
         map(1,2),
@@ -22,6 +23,23 @@ SCENARIO("Compile time mapping") {
     THEN("check bad lookup (compiletime)") {
       // Don't know how to check this, however the following should not compile
       // constexpr auto val = lookup[7];
+    }
+  }
+}
+
+SCENARIO("Usability") {
+  GIVEN("a map of int -> int") {
+    constexpr auto lookup = make_map(
+        map(1,2),
+        map(2,3),
+        map(5,7)
+    );
+    THEN("the lookup can be joined with another lookup, left lookup has priority") {
+      constexpr auto combined = join(lookup, make_map(map(7,9), map(1,5)));
+      CHECK( combined[1] == 2  );
+      CHECK( combined[2] == 3  );
+      CHECK( combined[5] == 7  );
+      CHECK( combined[7] == 9  );
     }
   }
 
@@ -55,5 +73,5 @@ SCENARIO("Compile time mapping") {
         CHECK( lookup[MyType{14}] == 44 );
       }
     }
-  }
+  }  
 }

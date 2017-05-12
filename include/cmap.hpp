@@ -40,15 +40,14 @@ constexpr auto operator<<(auto left, auto right) {
 }
 
 template<typename T>
-class root {
-  public:
+struct root {
   constexpr root(T _chain) : chain(_chain) {}
+  
   constexpr auto operator[](auto key) const {
     const auto [success, value]  = chain(key);
     return success ? value : throw std::out_of_range("No such key!");
   }
 
-  private:
   const T chain;
 };
 
@@ -58,4 +57,8 @@ constexpr auto make_map(Ts...ts) {
   return root(chain);
 }
 
+constexpr auto join(root<auto> left, root<auto> right) {
+  return root(left.chain << right.chain);
+}
+  
 } // namespace cmap
