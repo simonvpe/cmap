@@ -23,6 +23,29 @@ constexpr auto compiler_error = lookup[14];
 const auto exception_thrown = lookup[14];
 // throws std::out_of_range
 ```
+### Custom types ###
+```c++
+#include <cmap.hpp>
+
+using cmap::make_map;
+using cmap::map;
+
+struct mytype {
+  // Equality comparison operator required!
+  constexpr bool operator==(const mytype& other) const {
+    return value == other.value;
+  }
+  const int value;
+};
+
+constexpr auto lookup_a     = make_map(map(mytype{12},42), map(mytype{13},43));
+constexpr auto fourty_two   = lookup_a[mytype{12}];
+constexpr auto fourty_three = lookup_a[mytype{13}];
+
+constexpr auto lookup_b     = make_map(map(42,mytype{12}), map(43,mytype{13}));
+constexpr mytype twelve     = lookup_b[42];
+constexpr mytype thirteen   = lookup_b[43];
+```
 
 ### Joining several maps ###
 ```c++
