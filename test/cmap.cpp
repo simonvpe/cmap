@@ -16,6 +16,13 @@ SCENARIO("Compile time mapping") {
       CHECK( lookup[2] == 3 );
       CHECK( lookup[5] == 7 );
     }
+    THEN("check bad lookup (runtime)") {      
+      CHECK_THROWS_AS( lookup[7], std::out_of_range );
+    }
+    THEN("check bad lookup (compiletime)") {
+      // Don't know how to check this, however the following should not compile
+      // constexpr auto val = lookup[7];
+    }
   }
 
   GIVEN("a custom type") {
