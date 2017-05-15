@@ -43,6 +43,13 @@ constexpr auto operator<<(auto left, auto right) {
   };
 }
 
+// This is basically a lambda, but I wanted operator[] rather than operator()
+// to make the interface more table-like. Basically this represents the following
+// lambda:
+// constexpr auto root = [chain](auto key) {
+//   const auto [success, value]  = chain(key);
+//   return success ? value : throw std::out_of_range("No such key!");
+// };
 template<typename T>
 struct root {
   constexpr root(T _chain) : chain(_chain) {}
