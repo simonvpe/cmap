@@ -32,12 +32,14 @@ constexpr auto map(auto key, auto value) {
 // no idea of how to do the fold expression in `make_map()` with a "regular" function
 constexpr auto operator<<(auto left, auto right) {
   return [left,right](auto key) {
-      const auto [lresult, lvalue] = left(key);
-      if(lresult) {
+      if(const auto [lresult, lvalue] = left(key); lresult) {
         return std::pair(true, lvalue);
       }
-      const auto [rresult, rvalue] = right(key);
-      return std::pair(rresult, rvalue);
+      if(const auto [rresult, rvalue] = right(key); rresult) {
+        return std::pair(true, rvalue);
+      }
+      using T = decltype(left(key).second);
+      return std::pair(false, T{});
   };
 }
 
