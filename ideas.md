@@ -1,10 +1,10 @@
-#Binary search enabled cmap#
+# Binary search enabled cmap #
 ```c++
 #include <utility>
 #include <stdexcept>
 
 template<typename T>
-constexpr auto binary_search(const T* first, const T* last, T key) {
+constexpr inline auto binary_search = [](const T* first, const T* last, T key) {
   const auto size = last - first;
   auto left  = 0;
   auto right = size - 1;
@@ -16,7 +16,16 @@ constexpr auto binary_search(const T* first, const T* last, T key) {
     if(current == key) return m;
   }
   return ptrdiff_t{-1};
-}
+};
+
+template<typename T>
+constexpr inline auto linear_search = [](const T* first, const T* last, T key) {
+  const auto size = last - first;
+  for(auto i = 0 ; i < size ; ++i) {
+    if(first[i] == key) return ptrdiff_t{i};
+  }
+  return ptrdiff_t{-1};
+};
 
 template<typename TKey, typename TValue, int TSize = 0>
 struct index {
@@ -57,11 +66,12 @@ struct index {
     using  next_t = index<TKey,TValue,TSize+1>;
     return next_t(*this, key, value);
   }
-
-  constexpr auto find(TKey key) const {
+  
+  template<typename TSearch>
+  constexpr auto find(TKey key, TSearch&& search) const {
     const auto first = keys;
     const auto last  = first + TSize;
-    const auto idx   = binary_search(first, last, key);
+    const auto idx   = search(first, last, key);
     return idx >= 0 ? values[idx] : throw std::out_of_range("Key not found!");
   }
 };
@@ -69,8 +79,8 @@ struct index {
 int main() {
   constexpr index<int,int> i0;
   constexpr auto i1 = i0.insert(5,12).insert(6,13).insert(2,17);
-  constexpr auto key = 5;
-  constexpr auto val = i1.find(9);
+  volatile auto key = 5;
+  const auto val = i1.find(key, binary_search<int>);
   return val;
 }
 ```
