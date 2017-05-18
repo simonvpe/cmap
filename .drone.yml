@@ -1,6 +1,6 @@
 pipeline:
   build:
-    image: gcc-build
+    image: gcc-build-boost
     commands:
       - mkdir build
       - cd build
