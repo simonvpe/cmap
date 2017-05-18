@@ -4,6 +4,7 @@ This library solves static mapping of keys to values in compile time, allowing f
 
 ## Example ##
 ### Basic usage ###
+
 ```c++
 #include <cmap.hpp>
 
