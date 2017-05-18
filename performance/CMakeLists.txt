@@ -9,6 +9,8 @@ add_library(nonius INTERFACE)
 target_include_directories(nonius INTERFACE ${NONIUS_INCLUDE_DIR})
 target_include_directories(nonius INTERFACE ${MR_INCLUDE_DIR})
 
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -ftemplate-depth=10000 -fconstexpr-depth=10000" )
+
 # Make test executable
 set(NONIUS_SOURCES 
 	${CMAKE_CURRENT_SOURCE_DIR}/perfrunner.cpp

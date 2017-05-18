@@ -6,7 +6,7 @@
 
 #include <cstdint>
 #include <limits>
-
+#include <map>
 
 constexpr auto seed()
 {
@@ -146,6 +146,7 @@ struct index {
 template<std::size_t TSize>
 constexpr auto random() {
   PCG pcg;
+  pcg(); // initialize
   std::array<int, TSize> numbers{};
   for(std::size_t i = 0 ; i < TSize ; ++i) {
     numbers[i] = pcg();
@@ -153,6 +154,14 @@ constexpr auto random() {
   return numbers;
 }
 
+template<std::size_t TSize>
+auto make_map(std::array<int, TSize> keys, std::array<int, TSize> values) {
+  std::map<int,int> map;
+  for(std::size_t i = 0 ; i < TSize ; ++i) {
+    map[keys[i]] = values[i];
+  }
+  return map;
+}
 
 template<std::size_t TSize, std::size_t TDepth = 0>
 constexpr auto generate_random_lookup(const std::array<int,TSize>& keys, const std::array<int,TSize>& values) {
@@ -161,7 +170,7 @@ constexpr auto generate_random_lookup(const std::array<int,TSize>& keys, const s
     return root;
   }
   else {
-    return generate_random_lookup<TSize,TDepth + 1>(keys, values).insert(keys[idx], values[idx]);
+    return generate_random_lookup<TSize,TDepth + 1>(keys, values).insert(keys[TDepth], values[TDepth]);
   }
 }
 
@@ -179,14 +188,46 @@ int main() {
 
 //constexpr auto make_big_lookup() {
 //}
+#include <iostream>
 
-NONIUS_BENCHMARK("random access (constexpr", []{
-    constexpr auto keys   = random<100>();
-    constexpr auto values = random<100>();
-    constexpr auto lookup = generate_random_lookup(keys,values);
-    //constexpr auto lookup = make_big_lookup();
+template<auto TSize> constexpr auto keys   = random<TSize>();
+template<auto TSize> constexpr auto values = random<TSize>();
+template<auto TSize> constexpr auto lookup = generate_random_lookup(keys<TSize>,values<TSize>);
+template<auto TSize> const auto map        = make_map(keys<TSize>, values<TSize>);
+
+NONIUS_BENCHMARK("[random access 1000 (binary_search, constexpr)]", []{
+    for(const auto key : keys<1000>) {
+      volatile auto value = lookup<1000>.find(key, cmap::binary_search<int>);
+      value;
+    }
 })
 
-NONIUS_BENCHMARK("to_string(42)", []{
-    return std::to_string(42);
+NONIUS_BENCHMARK("[random access 1000 (binary_search, volatile)]", []{
+    for(const auto key : keys<1000>) {
+      volatile auto k = key;
+      volatile auto value = lookup<1000>.find(k, cmap::binary_search<int>);
+      value;
+    }
+})
+
+NONIUS_BENCHMARK("[random access 1000 (linear_search, constexpr)]", []{
+    for(const auto key : keys<1000>) {
+      volatile auto value = lookup<1000>.find(key, cmap::linear_search<int>);
+      value;
+    }
+})
+
+NONIUS_BENCHMARK("[random access 1000 (linear_search, volatile)]", []{
+    for(const auto key : keys<1000>) {
+      volatile auto k = key;
+      volatile auto value = lookup<1000>.find(k, cmap::linear_search<int>);
+      value;
+    }
+})
+
+NONIUS_BENCHMARK("[random access 1000 (std::map)]", []{
+    for(const auto key : keys<1000>) {
+      volatile auto value = map<1000>.at(key);
+      value;
+    }
 })
