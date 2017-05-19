@@ -195,39 +195,39 @@ template<auto TSize> constexpr auto values = random<TSize>();
 template<auto TSize> constexpr auto lookup = generate_random_lookup(keys<TSize>,values<TSize>);
 template<auto TSize> const auto map        = make_map(keys<TSize>, values<TSize>);
 
-NONIUS_BENCHMARK("[random access 1000 (binary_search, constexpr)]", []{
-    for(const auto key : keys<1000>) {
-      volatile auto value = lookup<1000>.find(key, cmap::binary_search<int>);
+NONIUS_BENCHMARK("[random access 100 (binary_search, constexpr)]", []{
+    for(const auto key : keys<100>) {
+      volatile auto value = lookup<100>.find(key, cmap::binary_search<int>);
       value;
     }
 })
 
-NONIUS_BENCHMARK("[random access 1000 (binary_search, volatile)]", []{
-    for(const auto key : keys<1000>) {
+NONIUS_BENCHMARK("[random access 100 (binary_search, volatile)]", []{
+    for(const auto key : keys<100>) {
       volatile auto k = key;
-      volatile auto value = lookup<1000>.find(k, cmap::binary_search<int>);
+      volatile auto value = lookup<100>.find(k, cmap::binary_search<int>);
       value;
     }
 })
 
-NONIUS_BENCHMARK("[random access 1000 (linear_search, constexpr)]", []{
-    for(const auto key : keys<1000>) {
-      volatile auto value = lookup<1000>.find(key, cmap::linear_search<int>);
+NONIUS_BENCHMARK("[random access 100 (linear_search, constexpr)]", []{
+    for(const auto key : keys<100>) {
+      volatile auto value = lookup<100>.find(key, cmap::linear_search<int>);
       value;
     }
 })
 
-NONIUS_BENCHMARK("[random access 1000 (linear_search, volatile)]", []{
-    for(const auto key : keys<1000>) {
+NONIUS_BENCHMARK("[random access 100 (linear_search, volatile)]", []{
+    for(const auto key : keys<100>) {
       volatile auto k = key;
-      volatile auto value = lookup<1000>.find(k, cmap::linear_search<int>);
+      volatile auto value = lookup<100>.find(k, cmap::linear_search<int>);
       value;
     }
 })
 
-NONIUS_BENCHMARK("[random access 1000 (std::map)]", []{
-    for(const auto key : keys<1000>) {
-      volatile auto value = map<1000>.at(key);
+NONIUS_BENCHMARK("[random access 100 (std::map)]", []{
+    for(const auto key : keys<100>) {
+      volatile auto value = map<100>.at(key);
       value;
     }
 })
