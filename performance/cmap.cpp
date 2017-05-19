@@ -1,5 +1,4 @@
 #include <nonius/nonius.h++>
-#include <cmap.hpp>
 
 #include <utility>
 #include <stdexcept>
@@ -141,6 +140,27 @@ struct index {
     return idx >= 0 ? values[idx] : throw std::out_of_range("Key not found!");
   }
 };
+
+template<typename TKey, typename TValue, int TSize>
+constexpr auto operator<<(index<TKey,TValue,TSize> left, std::pair<TKey,TValue> p) {
+  const auto [key, value] = p;
+  return left.insert(key, value);
+}
+  
+constexpr auto map(auto key, auto value) {
+  return std::pair(key, value);
+}
+
+template<typename TKey, typename TValue>
+constexpr auto make_map(std::pair<TKey,TValue> first) {
+  return index<TKey,TValue>() << first;
+}
+
+template<typename TKey, typename TValue, typename...Ts>
+constexpr auto make_map(std::pair<TKey,TValue> first, Ts...rest) {
+  return index<TKey,TValue>() << first << (... << rest);
+}
+  
 } // namespace cmap
 
 template<std::size_t TSize>
@@ -165,30 +185,14 @@ auto make_map(std::array<int, TSize> keys, std::array<int, TSize> values) {
 
 template<std::size_t TSize, std::size_t TDepth = 0>
 constexpr auto generate_random_lookup(const std::array<int,TSize>& keys, const std::array<int,TSize>& values) {
-  if constexpr (TSize == TDepth) {
+  if constexpr ((TSize - 1) == TDepth) {
     cmap::index<int,int> root;
-    return root;
+    return cmap::make_map(cmap::map(keys[TDepth], values[TDepth]));
   }
   else {
-    return generate_random_lookup<TSize,TDepth + 1>(keys, values).insert(keys[TDepth], values[TDepth]);
+    return generate_random_lookup<TSize,TDepth + 1>(keys, values) << std::pair(keys[TDepth], values[TDepth]);
   }
 }
-
-
-
-/*
-int main() {
-  constexpr index<int,int> i0;
-  constexpr auto i1 = i0.insert(5,12).insert(6,13).insert(2,17);
-  volatile auto key = 5;
-  const auto val = i1.find(key, binary_search<int>);
-  return val;
-}
-*/
-
-//constexpr auto make_big_lookup() {
-//}
-#include <iostream>
 
 template<auto TSize> constexpr auto keys   = random<TSize>();
 template<auto TSize> constexpr auto values = random<TSize>();
