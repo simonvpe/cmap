@@ -1,4 +1,4 @@
-[![Build Status](http://ec2-54-202-150-105.us-west-2.compute.amazonaws.com/api/badges/simonvpe/cmap/status.svg)](http://ec2-54-202-150-105.us-west-2.compute.amazonaws.com/simonvpe/cmap)
+[![Build Status](http://ec2-54-245-163-75.us-west-2.compute.amazonaws.com/api/badges/simonvpe/cmap/status.svg)](http://ec2-54-202-150-105.us-west-2.compute.amazonaws.com/simonvpe/cmap)
 # A C++17 compile time lookup table single header library
 This library solves static mapping of keys to values in compile time, allowing for highly optimized code, yet short and concise.
 
