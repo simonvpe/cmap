@@ -2,9 +2,6 @@
 
 #include <utility>
 #include <stdexcept>
-
-#include <cstdint>
-#include <limits>
 #include <map>
 
 #include "pcg.hpp"
