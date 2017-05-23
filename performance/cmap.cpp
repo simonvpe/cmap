@@ -150,14 +150,14 @@ template<auto TSize> const auto map               = make_map(keys<TSize>, values
 template<auto TSize> constexpr auto reversed_keys = reverse(keys<TSize>);
 
 NONIUS_BENCHMARK("[random access 100 (binary_search, constexpr)]", []{
-    for(const auto key : reversed_keys)) {
+    for(const auto key : reversed_keys<100>)) {
       volatile auto value = lookup<100>.find(key, cmap::binary_search<int>);
       value;
     }
 })
 
 NONIUS_BENCHMARK("[random access 100 (binary_search, volatile)]", []{
-    for(const auto key : reversed_keys) {
+    for(const auto key : reversed_keys<100>) {
       volatile auto k = key;
       volatile auto value = lookup<100>.find(k, cmap::binary_search<int>);
       value;
@@ -165,14 +165,14 @@ NONIUS_BENCHMARK("[random access 100 (binary_search, volatile)]", []{
 })
 
 NONIUS_BENCHMARK("[random access 100 (linear_search, constexpr)]", []{
-    for(const auto key : reversed_keys) {
+    for(const auto key : reversed_keys<100>) {
       volatile auto value = lookup<100>.find(key, cmap::linear_search<int>);
       value;
     }
 })
 
 NONIUS_BENCHMARK("[random access 100 (linear_search, volatile)]", []{
-    for(const auto key : reversed_keys) {
+    for(const auto key : reversed_keys<100>) {
       volatile auto k = key;
       volatile auto value = lookup<100>.find(k, cmap::linear_search<int>);
       value;
@@ -180,7 +180,7 @@ NONIUS_BENCHMARK("[random access 100 (linear_search, volatile)]", []{
 })
 
 NONIUS_BENCHMARK("[random access 100 (std::map)]", []{
-    for(const auto key : reversed_keys) {
+    for(const auto key : reversed_keys<100>) {
       volatile auto value = map<100>.at(key);
       value;
     }
