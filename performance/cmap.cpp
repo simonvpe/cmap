@@ -128,7 +128,7 @@ constexpr auto make_lookup(const std::array<int,TSize>& keys, const std::array<i
     return cmap::make_map(cmap::map(keys[TDepth], values[TDepth]));
   }
   else {
-    return generate_random_lookup<TSize,TDepth + 1>(keys, values) << std::pair(keys[TDepth], values[TDepth]);
+    return make_lookup<TSize,TDepth + 1>(keys, values) << std::pair(keys[TDepth], values[TDepth]);
   }
 }
 
