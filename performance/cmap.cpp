@@ -103,17 +103,6 @@ constexpr auto make_map(std::pair<TKey,TValue> first, Ts...rest) {
   
 } // namespace cmap
 
-template<std::size_t TSize>
-constexpr auto random() {
-  PCG pcg;
-  pcg(); // initialize
-  std::array<int, TSize> numbers{};
-  for(std::size_t i = 0 ; i < TSize ; ++i) {
-    numbers[i] = pcg();
-  }
-  return numbers;
-}
-
 template<auto TSize>
 constexpr auto reverse(const std::array<int,TSize> in) {
   std::array<int,TSize> out{};
@@ -133,7 +122,7 @@ auto make_map(std::array<int, TSize> keys, std::array<int, TSize> values) {
 }
 
 template<std::size_t TSize, std::size_t TDepth = 0>
-constexpr auto generate_random_lookup(const std::array<int,TSize>& keys, const std::array<int,TSize>& values) {
+constexpr auto make_lookup(const std::array<int,TSize>& keys, const std::array<int,TSize>& values) {
   if constexpr ((TSize - 1) == TDepth) {
     cmap::index<int,int> root;
     return cmap::make_map(cmap::map(keys[TDepth], values[TDepth]));
@@ -143,9 +132,9 @@ constexpr auto generate_random_lookup(const std::array<int,TSize>& keys, const s
   }
 }
 
-template<auto TSize> constexpr auto keys          = random<TSize>();
-template<auto TSize> constexpr auto values        = random<TSize>();
-template<auto TSize> constexpr auto lookup        = generate_random_lookup(keys<TSize>,values<TSize>);
+template<auto TSize> constexpr auto keys          = make_random_array<TSize>();
+template<auto TSize> constexpr auto values        = make_random_array<TSize>();
+template<auto TSize> constexpr auto lookup        = make_lookup(keys<TSize>,values<TSize>);
 template<auto TSize> const auto map               = make_map(keys<TSize>, values<TSize>);
 template<auto TSize> constexpr auto reversed_keys = reverse(keys<TSize>);
 
