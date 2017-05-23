@@ -150,7 +150,7 @@ template<auto TSize> const auto map               = make_map(keys<TSize>, values
 template<auto TSize> constexpr auto reversed_keys = reverse(keys<TSize>);
 
 NONIUS_BENCHMARK("[random access 100 (binary_search, constexpr)]", []{
-    for(const auto key : reversed_keys<100>)) {
+    for(const auto key : reversed_keys<100>) {
       volatile auto value = lookup<100>.find(key, cmap::binary_search<int>);
       value;
     }
