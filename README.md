@@ -70,7 +70,7 @@ constexpr auto fourty_five  = lookup[15];
 Simply `#include <cmap.hpp>`.
 
 ## Running the tests ##
-Make sure you have a C++17 compiler (preferably gcc 7) and cmake >= 3.7 installed, then
+Make sure you have a C++17 compiler (preferably gcc 7) and cmake >= 3.7 installed. Additionally, for the performance tests you'll need Boost.System.
 ```bash
 $ git clone https://github.com/simonvpe/cmap.git
 $ cd cmap && mkdir build && cd build && cmake .. && make && ./test/tests
