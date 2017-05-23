@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <array>
 
 constexpr auto seed()
 {
@@ -60,4 +61,15 @@ constexpr auto get_random(int count)
   }
   
   return pcg();
+}
+
+template<std::size_t TSize>
+constexpr auto make_random_array() {
+  PCG pcg;
+  pcg(); // initialize
+  std::array<int, TSize> numbers{};
+  for(std::size_t i = 0 ; i < TSize ; ++i) {
+    numbers[i] = pcg();
+  }
+  return numbers;
 }
