@@ -7,3 +7,4 @@ pipeline:
       - cmake ..
       - make
       - ./test/tests
+      - ./performance/performance
