@@ -116,7 +116,7 @@ constexpr auto random() {
 
 template<auto TSize>
 constexpr auto reverse(const std::array<int,TSize> in) {
-  std::array<int,TSize> out;
+  std::array<int,TSize> out{};
   for(auto i = 0 ; i < in.size() ; ++i) {
     out[i] = in[in.size() - 1 - i];
   }
