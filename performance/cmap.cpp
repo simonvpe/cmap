@@ -138,23 +138,20 @@ template<auto TSize> constexpr auto lookup        = make_lookup(keys<TSize>,valu
 template<auto TSize> const auto map               = make_map(keys<TSize>, values<TSize>);
 template<auto TSize> constexpr auto reversed_keys = reverse(keys<TSize>);
 
-NONIUS_BENCHMARK("[random access 100 (binary_search)]", []{
-    for(const auto key : reversed_keys<100>) {
-      volatile auto value = lookup<100>.find(key, cmap::binary_search<int>);
-      value;
-    }
+NONIUS_BENCHMARK("[random access 100 (binary_search)]", [](int i){
+  const auto key = reversed_keys<100>[i % 100];
+  volatile auto value = lookup<100>.find(key, cmap::binary_search<int>);
+  value;
 })
 
-NONIUS_BENCHMARK("[random access 100 (linear_search)]", []{
-    for(const auto key : reversed_keys<100>) {
-      volatile auto value = lookup<100>.find(key, cmap::linear_search<int>);
-      value;
-    }
+NONIUS_BENCHMARK("[random access 100 (linear_search)]", [](int i){
+  const auto key = reversed_keys<100>[i % 100];
+  volatile auto value = lookup<100>.find(key, cmap::linear_search<int>);
+  value;
 })
 
-NONIUS_BENCHMARK("[random access 100 (std::map)]", []{
-    for(const auto key : reversed_keys<100>) {
-      volatile auto value = map<100>.at(key);
-      value;
-    }
+NONIUS_BENCHMARK("[random access 100 (std::map)]", [](int i){
+  const auto key = reversed_keys<100>[i % 100];
+  volatile auto value = map<100>.at(key);
+  value;
 })
