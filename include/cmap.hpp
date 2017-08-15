@@ -38,8 +38,8 @@ constexpr auto operator<<(auto left, auto right) {
       if(const auto [success, value] = right(key); success) {
         return std::pair(true, value);
       }
-      using T = decltype(left(key).second);
-      return std::pair(false, T{});
+      const auto dummy_value = left(key).second;
+      return std::pair(false, dummy_value);
   };
 }
 
