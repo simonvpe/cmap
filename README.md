@@ -66,6 +66,30 @@ constexpr auto fourty_four  = lookup[14];
 constexpr auto fourty_five  = lookup[15];
 ```
 
+### Nested maps ###
+```c++
+#include <cmap.hpp>
+
+using cmap::make_map;
+using cmap::map;
+
+constexpr auto lookup = make_map(
+  map('A', make_map(
+    map(12, 42),
+    map(13, 43)
+  )),
+  map('B', make_map(
+    map(14, 44),
+    map(15, 45)
+  ))
+);
+
+constexpr auto fourty_two   = lookup['A'][12];
+constexpr auto fourty_three = lookup['A'][13];
+constexpr auto fourty_four  = lookup['B'][14];
+constexpr auto fourty_five  = lookup['B'][15];
+```
+
 ## Installation ##
 Simply `#include <cmap.hpp>`.
 
