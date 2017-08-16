@@ -73,5 +73,24 @@ SCENARIO("Usability") {
         CHECK( lookup[MyType{14}] == 44 );
       }
     }
+	  
+    GIVEN("a nested map") {
+      constexpr auto lookup = make_map(
+          map(1, make_map(
+		  map(10, 100),
+		  map(11, 101)
+          )),
+	  map(2, make_map(
+		  map(12, 102),
+		  map(13, 103)
+          ))
+      );
+      THEN("check each mapping") {
+        CHECK( lookup[1][10] == 100 );
+        CHECK( lookup[1][11] == 101 );
+        CHECK( lookup[2][12] == 102 );
+	CHECK( lookup[2][13] == 103 );
+      }
+    }	  
   }  
 }
