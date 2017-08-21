@@ -23,6 +23,9 @@ constexpr auto compiler_error = lookup[14];
 // On the other hand, using non constexpr variables an exception is thrown instead
 const auto exception_thrown = lookup[14];
 // throws std::out_of_range
+
+// Do whatever you want with the lookup result
+char data[ lookup[12]; // char data[42];
 ```
 ### Custom types ###
 ```c++
