@@ -25,7 +25,7 @@ const auto exception_thrown = lookup[14];
 // throws std::out_of_range
 
 // Do whatever you want with the lookup result
-char data[ lookup[12]; // char data[42];
+char data[ lookup[12] ]; // char data[42];
 ```
 ### Custom types ###
 ```c++
