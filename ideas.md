@@ -40,14 +40,15 @@ namespace _model {
 
   constexpr auto make_branch(auto left, auto right) {
     return [left,right](auto key) {
-        if(const auto [success, value] = left(key); success) {
-          return pair(true, value);
+        if(const auto [result, value] = left(key); result) {
+          return pair(result, value);
         }
-        if(const auto [success, value] = right(key); success) {
-          return pair(true, value);
+        if(const auto [result, value] = right(key); result) {
+          return pair(result, value);
         }
+        const auto result = false;
         const auto dummy_value = left(key).second;
-        return pair(false, dummy_value);
+        return pair(result, dummy_value);
     };
   }
 
