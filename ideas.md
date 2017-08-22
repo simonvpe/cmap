@@ -33,7 +33,8 @@ namespace _model {
   constexpr auto make_terminal(std::pair<auto,auto> entry) {
     const auto [key, value] = entry;
     return [key,value](auto _key) {
-      return std::pair(_key == key, value);
+      const auto result = (_key == key);
+      return std::pair(result, value);
     };
   };
 
