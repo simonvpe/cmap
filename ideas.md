@@ -1,3 +1,98 @@
+# Simplified and clarified API #
+```c++
+// MIT License
+
+// Copyright (c) 2017 Simon Pettersson
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+#include <utility>
+#include <stdexcept>
+
+namespace cmap {
+
+namespace _model {
+  using std::pair;
+
+  constexpr auto make_terminal(std::pair<auto,auto> entry) {
+    const auto [key, value] = entry;
+    return [key,value](auto _key) {
+      return std::pair(_key == key, value);
+    };
+  };
+
+  constexpr auto make_branch(auto left, auto right) {
+    return [left,right](auto key) {
+        if(const auto [success, value] = left(key); success) {
+          return pair(true, value);
+        }
+        if(const auto [success, value] = right(key); success) {
+          return pair(true, value);
+        }
+        const auto dummy_value = left(key).second;
+        return pair(false, dummy_value);
+    };
+  }
+
+  constexpr auto merge(auto node) {
+    return node;
+  }
+
+  constexpr auto merge(auto left, auto ... rest) {
+    return make_branch(left, merge(rest...));
+  }
+
+}
+
+// API Functions follow
+
+constexpr auto make_map(std::pair<auto,auto> left_node, std::pair<auto,auto>...rest) {
+  return _model::merge(
+    _model::make_terminal(left_node), 
+    _model::make_terminal(rest)...
+  );
+}
+
+constexpr auto join(auto left_map, auto right_map) {
+  return _model::merge(
+    left_map, 
+    right_map
+  );
+}
+
+constexpr auto lookup(auto tree, auto key) {
+  const auto [success, value] = tree(key);
+  return success ? value : throw std::out_of_range("No such key");
+}
+
+auto foo() {
+  constexpr auto a = std::pair<int,int>{12,42};
+  constexpr auto b = std::pair<int,int>{13,43};
+  constexpr auto map1 = make_map(a);
+  constexpr auto map2 = make_map(b);
+  constexpr auto map3 = join(map1, map2);
+  constexpr auto val = lookup(map3, 12);
+  return val;
+}
+
+} // namespace cmap
+```
 # Binary search enabled cmap #
 ```c++
 #include <utility>
