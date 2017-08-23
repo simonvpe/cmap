@@ -182,11 +182,11 @@ constexpr auto make_lookup(const auto ... rest) {
 enum class Device   { MK65F18 };
 
 //    GPIO MODULE
-namespace GPIO {
+struct GPIO {
   enum class Port { PTA, PTB };
   enum class Register { PDOR, PSOR, PCOR, PTOR, PDIR, PDDR };
 
-  constexpr auto Module = make_lookup(
+  static constexpr auto module = make_lookup(
     map(Device::MK65F18, make_lookup(
       map(Port::PTA, make_lookup(
         map(Register::PDOR, 0x400FF000u),
@@ -206,14 +206,14 @@ namespace GPIO {
       ))
     ))
   );
-}
+};
 
 //    I2C MODULE
-namespace I2C {
+struct I2C {
   enum class Port { I2C0, I2C1, I2C2, I2C3 };
   enum class Register { A1, F, C1, S, D, C2, FLT, RA, SMB, A2, SLTH, SLTL };
 
-  constexpr auto Module = make_lookup(
+  static constexpr auto module = make_lookup(
     map(Device::MK65F18, make_lookup(
       map(Port::I2C0, make_lookup(
         map(Register::A1, 0x40066000u)
@@ -229,53 +229,50 @@ namespace I2C {
       ))      
     ))
   );
-}
+};
 
 //    BSP
+static constexpr auto mk_read_fn(auto device, auto module) { 
+  return [device, module](auto port, auto reg) {
+    return *reinterpret_cast<volatile const uint32_t*>(module[device][port][reg]); 
+  };
+};
+
+static constexpr auto mk_write_fn(auto device, auto module) { 
+  return [device, module](auto port, auto reg, uint32_t value) {
+    *reinterpret_cast<volatile uint32_t*>(module[device][port][reg]) = value; 
+  };
+};
+
+static constexpr auto mk_rmw_fn(auto device, auto module) {
+  const auto read = mk_read_fn(device, module);
+  const auto write = mk_write_fn(device, module);
+  return [module, read, write](auto port, auto reg, auto modify_fn) {
+    const auto old_value = read(port, reg);
+    const auto new_value = modify_fn(old_value);
+    write(port, reg, new_value);
+    return new_value;
+  };
+}
+
 template<Device TDevice> struct bsp {
-  struct gpio {
-    static constexpr auto write = bsp::mk_write_fn(GPIO::Module);
-    static constexpr auto read = bsp::mk_read_fn(GPIO::Module);
-    static constexpr auto rmw = bsp::mk_rmw_fn(GPIO::Module);
-  };
-  struct i2c {
-    static constexpr auto write = bsp::mk_write_fn(I2C::Module);
-    static constexpr auto read = bsp::mk_read_fn(I2C::Module);
-    static constexpr auto rmw = bsp::mk_rmw_fn(I2C::Module);
+  template<typename TModule> struct module {
+    static constexpr auto read = mk_read_fn(TDevice, TModule::module);
+    static constexpr auto write = mk_write_fn(TDevice, TModule::module);
+    static constexpr auto rmw = mk_rmw_fn(TDevice, TModule::module);
   };
 
-  private:
-  static constexpr auto mk_read_fn(auto module) { 
-    return [module](auto port, auto reg) {
-      return *reinterpret_cast<volatile const uint32_t*>(module[TDevice][port][reg]); 
-    };
-  };
-
-  static constexpr auto mk_write_fn(auto module) { 
-    return [module](auto port, auto reg, uint32_t value) {
-      *reinterpret_cast<volatile uint32_t*>(module[TDevice][port][reg]) = value; 
-    };
-  };
-
-  static constexpr auto mk_rmw_fn(auto module) {
-    const auto read = mk_read_fn(module);
-    const auto write = mk_write_fn(module);
-    return [module, read, write](auto port, auto reg, auto fn) {
-      const auto old_value = read(port, reg);
-      const auto new_value = fn(old_value);
-      write(port, reg, new_value);
-      return new_value;
-    };
-  }
+  static constexpr module<GPIO> gpio{};
+  static constexpr module<I2C>  i2c{};
 };
 
 // Using the BSP
 auto foobar() {
   using BOARD = bsp<Device::MK65F18>;
-  BOARD::i2c::rmw(I2C::Port::I2C0, I2C::Register::A1, [](auto value) {
+  BOARD::i2c.rmw(I2C::Port::I2C0, I2C::Register::A1, [](auto value) {
     return value | 0xf;
   });
-  return BOARD::i2c::read(I2C::Port::I2C0, I2C::Register::A1);
+  return BOARD::i2c.read(I2C::Port::I2C0, I2C::Register::A1);
 }
 
 // Verification
