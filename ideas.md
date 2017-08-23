@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include <utility>
+#include <tuple>
 #include <stdexcept>
 
 namespace cmap {
@@ -99,19 +100,19 @@ namespace _model {
   using std::pair;
 
   template<typename V> struct outcome {
-    constexpr outcome(bool s, V v) : success{s}, value{v} {}
+    constexpr outcome(bool s, const V v) : success{s}, value{v} {}
     const bool success;
     const V value;
   };
 
   template<typename K, typename V>
-  constexpr auto make_terminal(K key, V value) {
-    return [key,value](auto _key) {
+  constexpr auto make_terminal(const K key, const V value) {
+    return [key,value](const auto _key) {
       return outcome{_key == key, value};
     };
   };
 
-  constexpr auto make_branch(auto left, auto right) {
+  constexpr auto make_branch(const auto left, const auto right) {
     return [left,right](auto key) {
       if(const auto [result, value] = left(key); result) {
         return outcome{true, value};
@@ -120,11 +121,11 @@ namespace _model {
     };
   }
 
-  constexpr auto merge(auto node) {
+  constexpr auto merge(const auto node) {
     return node;
   }
 
-  constexpr auto merge(auto left, auto ... rest) {
+  constexpr auto merge(const auto left, const auto ... rest) {
     return make_branch(left, merge(rest...));
   }
 
@@ -139,19 +140,19 @@ namespace _model {
     constexpr auto fourty_four  = lookup(map, 14);
  */
 
-constexpr auto make_map(auto ... rest) {
+constexpr auto make_map(const auto ... rest) {
   return _model::merge(rest...);
 }
 
-constexpr auto map(auto key, auto value) {
+constexpr auto map(const auto key, const auto value) {
   return _model::make_terminal(key, value);
 }
 
-constexpr auto join(auto left_map, auto right_map) {
+constexpr auto join(const auto left_map, const auto right_map) {
   return _model::merge(left_map, right_map);
 }
 
-constexpr auto lookup(auto tree, auto key) {
+constexpr auto lookup(const auto tree, const auto key) {
   const auto [success, value] = tree(key);
   return success ? value : throw std::out_of_range("No such key");
 }
@@ -167,13 +168,114 @@ constexpr auto lookup(auto tree, auto key) {
 
 template<typename TLookup>
 struct lookup_type {
-  constexpr lookup_type(TLookup m) : map{m} {}
-  constexpr auto operator[](auto key) const { return lookup(map, key); }
+  constexpr lookup_type(const TLookup m) : map{m} {}
+  constexpr auto operator[](const auto key) const { return lookup(map, key); }
   const TLookup map;
 };
 
-constexpr auto make_lookup(auto ... rest) {
+constexpr auto make_lookup(const auto ... rest) {
   return lookup_type{make_map(rest...)};
+}
+
+// BSP Example
+
+enum class Device   { MK65F18 };
+
+//    GPIO MODULE
+namespace GPIO {
+  enum class Port { PTA, PTB };
+  enum class Register { PDOR, PSOR, PCOR, PTOR, PDIR, PDDR };
+
+  constexpr auto Module = make_lookup(
+    map(Device::MK65F18, make_lookup(
+      map(Port::PTA, make_lookup(
+        map(Register::PDOR, 0x400FF000u),
+        map(Register::PSOR, 0x400FF004u),
+        map(Register::PCOR, 0x400FF008u),
+        map(Register::PTOR, 0x400FF00Cu),
+        map(Register::PDIR, 0x400FF00Eu),
+        map(Register::PDDR, 0x400FF010u)
+      )),
+      map(Port::PTB, make_lookup( 
+        map(Register::PDOR, 0x400FF040u),
+        map(Register::PSOR, 0x400FF044u),
+        map(Register::PCOR, 0x400FF048u),
+        map(Register::PTOR, 0x400FF04Cu),
+        map(Register::PDIR, 0x400FF04Eu),
+        map(Register::PDDR, 0x400FF050u)
+      ))
+    ))
+  );
+}
+
+//    I2C MODULE
+namespace I2C {
+  enum class Port { I2C0, I2C1, I2C2, I2C3 };
+  enum class Register { A1, F, C1, S, D, C2, FLT, RA, SMB, A2, SLTH, SLTL };
+
+  constexpr auto Module = make_lookup(
+    map(Device::MK65F18, make_lookup(
+      map(Port::I2C0, make_lookup(
+        map(Register::A1, 0x40066000u)
+      )),
+      map(Port::I2C1, make_lookup(
+        map(Register::A1, 0x40067000u)
+      )),
+      map(Port::I2C2, make_lookup(
+        map(Register::A1, 0x400E6000u)
+      )),
+      map(Port::I2C3, make_lookup(
+        map(Register::A1, 0x400E7000u)
+      ))      
+    ))
+  );
+}
+
+//    BSP
+template<Device TDevice> struct bsp {
+  struct gpio {
+    static constexpr auto write = bsp::mk_write_fn(GPIO::Module);
+    static constexpr auto read = bsp::mk_read_fn(GPIO::Module);
+    static constexpr auto rmw = bsp::mk_rmw_fn(GPIO::Module);
+  };
+  struct i2c {
+    static constexpr auto write = bsp::mk_write_fn(I2C::Module);
+    static constexpr auto read = bsp::mk_read_fn(I2C::Module);
+    static constexpr auto rmw = bsp::mk_rmw_fn(I2C::Module);
+  };
+
+  private:
+  static constexpr auto mk_read_fn(auto module) { 
+    return [module](auto port, auto reg) {
+      return *reinterpret_cast<volatile const uint32_t*>(module[TDevice][port][reg]); 
+    };
+  };
+
+  static constexpr auto mk_write_fn(auto module) { 
+    return [module](auto port, auto reg, uint32_t value) {
+      *reinterpret_cast<volatile uint32_t*>(module[TDevice][port][reg]) = value; 
+    };
+  };
+
+  static constexpr auto mk_rmw_fn(auto module) {
+    const auto read = mk_read_fn(module);
+    const auto write = mk_write_fn(module);
+    return [module, read, write](auto port, auto reg, auto fn) {
+      const auto old_value = read(port, reg);
+      const auto new_value = fn(old_value);
+      write(port, reg, new_value);
+      return new_value;
+    };
+  }
+};
+
+// Using the BSP
+auto foobar() {
+  using BOARD = bsp<Device::MK65F18>;
+  BOARD::i2c::rmw(I2C::Port::I2C0, I2C::Register::A1, [](auto value) {
+    return value | 0xf;
+  });
+  return BOARD::i2c::read(I2C::Port::I2C0, I2C::Register::A1);
 }
 
 // Verification
@@ -201,7 +303,6 @@ auto foo() {
 
   return lookup(map0,14);
 }
-
 
 
 } // namespace cmap
