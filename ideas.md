@@ -27,12 +27,12 @@
 
 namespace cmap {
 
-// Model
-
+/*
+  The underlying model for the binary tree
+ */
 namespace _model {
-  using std::pair;
   /*
-    A map is built like a DAG as illustrated below.
+    A map is built like a binary tree as illustrated below.
 
             f1(k)
              / \
@@ -59,8 +59,8 @@ namespace _model {
       evaluates the right subtree and returns the result of the 
       evaluation of the right subtree.
 
-    Example: 
-      // Construct the tree above
+    Example: Construct the tree above
+
       const auto f5 = make_terminal(5,15);
       const auto f4 = make_terminal(4,14);
       const auto f2 = make_terminal(3,13);
@@ -77,9 +77,26 @@ namespace _model {
         ...
       -> {true, 15}
 
-    In order to easily chain together multiple subtrees
-  */
+    In order to easily chain together multiple subtrees there is a
+    utility function called `merge(node1, ...)` which takes all the
+    terminal nodes as arguments and automatically creates the branches. 
 
+    To reproduce the previous example using the merge function one could do 
+    the following.
+
+    Example: Construct the same tree using the `merge` function
+
+      const auto f5 = make_terminal(5,15);
+      const auto f4 = make_terminal(4,14);
+      const auto f2 = make_terminal(3,13);
+      const auto f1 = merge(f2,f4,f5);
+
+    Since the whole model is completely independent of the datatype stored
+    there is literally no limit to what you can store in the map, as long
+    as it is copy constructible. That means that you can nest maps and store
+    complex types.
+  */
+  using std::pair;
 
   template<typename V> struct outcome {
     constexpr outcome(bool s, V v) : success{s}, value{v} {}
@@ -113,7 +130,14 @@ namespace _model {
 
 }
 
-// API
+/*
+  Functional interface
+
+  Example:
+    constexpr auto map = make_map(map(13,43), map(14,44));
+    constexpr auto fourty_three = lookup(map, 13);
+    constexpr auto fourty_four  = lookup(map, 14);
+ */
 
 constexpr auto make_map(auto ... rest) {
   return _model::merge(rest...);
@@ -124,15 +148,32 @@ constexpr auto map(auto key, auto value) {
 }
 
 constexpr auto join(auto left_map, auto right_map) {
-  return _model::merge(
-    left_map, 
-    right_map
-  );
+  return _model::merge(left_map, right_map);
 }
 
 constexpr auto lookup(auto tree, auto key) {
   const auto [success, value] = tree(key);
   return success ? value : throw std::out_of_range("No such key");
+}
+
+/*
+  Class interface
+
+  Example:
+    constexpr auto map = make_lookup(map(13,43), map(14,44));
+    constexpr auto fourty_three = map[13];
+    constexpr auto fourty_four  = map[14];
+ */
+
+template<typename TLookup>
+struct lookup_type {
+  constexpr lookup_type(TLookup m) : map{m} {}
+  constexpr auto operator[](auto key) const { return lookup(map, key); }
+  const TLookup map;
+};
+
+constexpr auto make_lookup(auto ... rest) {
+  return lookup_type{make_map(rest...)};
 }
 
 // Verification
@@ -141,10 +182,17 @@ auto foo() {
   constexpr auto map0 = make_map(map(13,43),map(14,44));
   constexpr auto map1 = make_map(map(12,42),map(15,45));
   constexpr auto map3 = make_map(map(0,map0), map(1,map1));
-  
+  constexpr auto map4 = join(map0,map1);
+
   static_assert(lookup(lookup(map3, 0), 13) == 43);
 
   static_assert(lookup(map0, 13) == 43);
+
+  static_assert(lookup(map4, 13) == 43);
+  static_assert(lookup(map4, 12) == 42);
+
+  constexpr auto t = make_lookup(map(13,43));
+  static_assert(t[13] == 43);
 
   return lookup(map0,14);
 }
