@@ -191,8 +191,13 @@ auto foo() {
   static_assert(lookup(map4, 13) == 43);
   static_assert(lookup(map4, 12) == 42);
 
-  constexpr auto t = make_lookup(map(13,43));
-  static_assert(t[13] == 43);
+  constexpr auto look0 = make_lookup(map(13,43));
+  static_assert(look0[13] == 43);
+
+  constexpr auto look1 = make_lookup(map("HELLO",10), map("WORLD",20));
+  constexpr auto look2 = make_lookup(map("HELLO",11), map("WORLD",21));
+  constexpr auto look3 = make_lookup(map("A",look1),map("B",look2));
+  static_assert(look3["A"]["HELLO"] == 10);
 
   return lookup(map0,14);
 }
