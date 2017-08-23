@@ -255,24 +255,24 @@ static constexpr auto mk_rmw_fn(auto device, auto module) {
   };
 }
 
-template<Device TDevice> struct bsp {
+template<Device TDevice> struct Bsp {
   template<typename TModule> struct module {
     static constexpr auto read = mk_read_fn(TDevice, TModule::module);
     static constexpr auto write = mk_write_fn(TDevice, TModule::module);
     static constexpr auto rmw = mk_rmw_fn(TDevice, TModule::module);
   };
 
-  static constexpr module<GPIO> gpio{};
-  static constexpr module<I2C>  i2c{};
+  const module<GPIO> gpio{};
+  const module<I2C>  i2c{};
 };
 
 // Using the BSP
 auto foobar() {
-  using BOARD = bsp<Device::MK65F18>;
-  BOARD::i2c.rmw(I2C::Port::I2C0, I2C::Register::A1, [](auto value) {
-    return value | 0xf;
+  constexpr auto bsp = Bsp<Device::MK65F18>{};
+  bsp.i2c.rmw(I2C::Port::I2C0, I2C::Register::A1, [](auto value) {
+    return value & 0xff;
   });
-  return BOARD::i2c.read(I2C::Port::I2C0, I2C::Register::A1);
+  return bsp.i2c.read(I2C::Port::I2C0, I2C::Register::A1);
 }
 
 // Verification
