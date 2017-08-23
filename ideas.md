@@ -27,28 +27,79 @@
 
 namespace cmap {
 
+// Model
+
 namespace _model {
   using std::pair;
+  /*
+    A map is built like a DAG as illustrated below.
 
-  constexpr auto make_terminal(std::pair<auto,auto> entry) {
-    const auto [key, value] = entry;
+            f1(k)
+             / \
+            /   \
+         f2(k)  f3(k)
+                 / \
+                /   \
+             f4(k)  f5(k)
+              
+    Each subtree f1,f2,f3,f4,f5 is a function which
+    evaluates a key and returns an `outcome` which contains 
+    information about whether the subtree contained the key,
+    and in that case what the associated value was.
+
+    To construct the tree we utilize two factory functions
+
+    * One called `make_terminal(k,v)` which creates a function that
+      evaluates a key and returns an whether it matches a particular
+      constant and the associated value.
+
+    * One called `make_branch(left,right)` which creates a branch 
+      node, a function that first evaluats and returns the result of 
+      evaluating the left subtree if successful. If unsuccessful it 
+      evaluates the right subtree and returns the result of the 
+      evaluation of the right subtree.
+
+    Example: 
+      // Construct the tree above
+      const auto f5 = make_terminal(5,15);
+      const auto f4 = make_terminal(4,14);
+      const auto f2 = make_terminal(3,13);
+      const auto f3 = make_branch(f4, f5);
+      const auto f1 = make_branch(f2, f3);
+
+      // Performing a lookup for the value `5` would
+      // produce the stacktrace
+      f1(5)
+        f2(5) -> {false, 13}
+        f3(5)
+          f4(5) -> {false, 14}
+          f5(5) -> {true, 15}
+        ...
+      -> {true, 15}
+
+    In order to easily chain together multiple subtrees
+  */
+
+
+  template<typename V> struct outcome {
+    constexpr outcome(bool s, V v) : success{s}, value{v} {}
+    const bool success;
+    const V value;
+  };
+
+  template<typename K, typename V>
+  constexpr auto make_terminal(K key, V value) {
     return [key,value](auto _key) {
-      const auto result = (_key == key);
-      return std::pair(result, value);
+      return outcome{_key == key, value};
     };
   };
 
   constexpr auto make_branch(auto left, auto right) {
     return [left,right](auto key) {
-        if(const auto [result, value] = left(key); result) {
-          return pair(result, value);
-        }
-        if(const auto [result, value] = right(key); result) {
-          return pair(result, value);
-        }
-        const auto result = false;
-        const auto dummy_value = left(key).second;
-        return pair(result, dummy_value);
+      if(const auto [result, value] = left(key); result) {
+        return outcome{true, value};
+      }
+      return right(key);
     };
   }
 
@@ -62,13 +113,14 @@ namespace _model {
 
 }
 
-// API Functions follow
+// API
 
-constexpr auto make_map(std::pair<auto,auto> left_node, std::pair<auto,auto>...rest) {
-  return _model::merge(
-    _model::make_terminal(left_node), 
-    _model::make_terminal(rest)...
-  );
+constexpr auto make_map(auto ... rest) {
+  return _model::merge(rest...);
+}
+
+constexpr auto map(auto key, auto value) {
+  return _model::make_terminal(key, value);
 }
 
 constexpr auto join(auto left_map, auto right_map) {
@@ -83,15 +135,21 @@ constexpr auto lookup(auto tree, auto key) {
   return success ? value : throw std::out_of_range("No such key");
 }
 
+// Verification
+
 auto foo() {
-  constexpr auto a = std::pair<int,int>{12,42};
-  constexpr auto b = std::pair<int,int>{13,43};
-  constexpr auto map1 = make_map(a);
-  constexpr auto map2 = make_map(b);
-  constexpr auto map3 = join(map1, map2);
-  constexpr auto val = lookup(map3, 12);
-  return val;
+  constexpr auto map0 = make_map(map(13,43),map(14,44));
+  constexpr auto map1 = make_map(map(12,42),map(15,45));
+  constexpr auto map3 = make_map(map(0,map0), map(1,map1));
+  
+  static_assert(lookup(lookup(map3, 0), 13) == 43);
+
+  static_assert(lookup(map0, 13) == 43);
+
+  return lookup(map0,14);
 }
+
+
 
 } // namespace cmap
 ```
