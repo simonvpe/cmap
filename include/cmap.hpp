@@ -143,11 +143,7 @@ constexpr auto make_map(const auto ... rest) {
 constexpr auto map(const auto key, const auto value) {
   return _model::make_terminal(key, value);
 }
-
-constexpr auto join(const auto left_map, const auto right_map) {
-  return _model::merge(left_map, right_map);
-}
-
+  
 constexpr auto lookup(const auto tree, const auto key) {
   const auto result = tree(key);
   return result.success ? result.value : throw std::out_of_range("No such key");
@@ -169,8 +165,12 @@ struct lookup_type {
   const TLookup map;
 };
 
+constexpr auto make_lookup(lookup_type<auto> ... rest) {
+  return lookup_type{make_map(rest.map...)};
+}
+
 constexpr auto make_lookup(const auto ... rest) {
   return lookup_type{make_map(rest...)};
 }
-  
+
 } // namespace cmap
