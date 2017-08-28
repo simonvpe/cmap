@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-markdown>
+          
+        </section>
+	<section data-markdown>
+          The concept of an "outcome"
+
+          ```c++
+          template< typename V >
+          struct outcome {
+            constexpr outcome(bool s, const V v) 
+            : success{s}
+            , value{v} 
+            { }
+    
+            const bool success;
+            const V value;
+          };          
+          ```
+
+          The outcome factory factory
+             
+          ```c++
+          template< typename K, typename V >
+          constexpr auto make_terminal(const K key, const V value) {
+            return [key,value](const auto _key) -> outcome<decltype(value)> {
+              return {_key == key, value};
+            };
+          };
+          ```
+        </section>
+	<section data-markdown>
+          Decisions, decisions...
+
+          ```c++
+          constexpr auto make_branch(const auto left, const auto right) {
+            return [left,right](auto key) -> decltype(left(key)) {
+              const auto result = left(key);
+              if(result.success) {
+                return {true, result.value};
+              }
+              return right(key);
+            };
+          }
+          ```
+        </section>
+        <section data-markdown>
+          Putting it all together
+
+          ```c++
+          constexpr auto make_map(const auto node)
+          { return node; }
+          
+          constexpr auto make_map(const auto left, const auto ... rest)
+          { return _model::make_branch(left, rest...); }
+
+          constexpr auto map(const auto key, const auto value)
+          { return _model::make_terminal(key, value); }
+
+          constexpr auto lookup(const auto tree, const auto key) {
+            const auto result = tree(key);
+            return result.success ? result.value
+              : throw std::out_of_range("No such key");
+          }          
+          ```
+          
+        </section>
+        <section data-markdown>
+          Adding an API
+
+          ```c++
+          template< typename TLookup >
+          struct lookup_type {
+            constexpr lookup_type(const TLookup m) : map{m}
+            { }
+            constexpr auto operator[](const auto key) const 
+            { return lookup(map, key); }
+            const TLookup map;
+          };
+            
+          constexpr auto make_lookup(const lookup_type<auto> ... rest) 
+          { return lookup_type{make_map(rest.map...)}; }
+              
+          constexpr auto make_lookup(const auto ... rest) 
+          { return lookup_type{make_map(rest...)}; }
+          ```
+        </section>
+        <section data-markdown>
+          Lookup all the things
+
+          ```c++
+          enum class Key { A, B };
+          
+          constexpr auto data = make_lookup(
+            map(Key::A,42), map(Key::B,43)
+          );
+          
+          const auto char[ data[Key::A] ]; // char[42];
+          ```
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+      dependencies: [
+      { src: 'plugin/markdown/marked.js' },
+      { src: 'plugin/markdown/markdown.js' },
+      { src: 'plugin/notes/notes.js', async: true },
+      { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+      ]
+      });
+    </script>
+  </body>
+</html>
