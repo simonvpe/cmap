@@ -8,11 +8,11 @@ This library solves static mapping of keys to values in compile time, allowing f
 ```c++
 #include <cmap.hpp>
 
-using cmap::make_map;
+using cmap::make_lookup;
 using cmap::map;
 
 // Mapping of int -> int
-constexpr auto lookup       = make_map(map(12,42), map(13,43));
+constexpr auto lookup       = make_lookup(map(12,42), map(13,43));
 constexpr auto fourty_two   = lookup[12];
 constexpr auto fourty_three = lookup[13];
 
@@ -31,7 +31,7 @@ char data[ lookup[12] ]; // char data[42];
 ```c++
 #include <cmap.hpp>
 
-using cmap::make_map;
+using cmap::make_lookup;
 using cmap::map;
 
 struct mytype {
@@ -42,11 +42,11 @@ struct mytype {
   const int value;
 };
 
-constexpr auto lookup_a     = make_map(map(mytype{12},42), map(mytype{13},43));
+constexpr auto lookup_a     = make_lookup(map(mytype{12},42), map(mytype{13},43));
 constexpr auto fourty_two   = lookup_a[mytype{12}];
 constexpr auto fourty_three = lookup_a[mytype{13}];
 
-constexpr auto lookup_b     = make_map(map(42,mytype{12}), map(43,mytype{13}));
+constexpr auto lookup_b     = make_lookup(map(42,mytype{12}), map(43,mytype{13}));
 constexpr mytype twelve     = lookup_b[42];
 constexpr mytype thirteen   = lookup_b[43];
 ```
@@ -55,12 +55,12 @@ constexpr mytype thirteen   = lookup_b[43];
 ```c++
 #include <cmap.hpp>
 
-using cmap::make_map;
+using cmap::make_lookup;
 using cmap::map;
 using cmap::join;
 
-constexpr auto lookup_one = make_map(map(12,42), map(13,43));
-constexpr auto lookup_two = make_map(map(14,44), map(15,45));
+constexpr auto lookup_one = make_lookup(map(12,42), map(13,43));
+constexpr auto lookup_two = make_lookup(map(14,44), map(15,45));
 constexpr auto lookup     = join(lookup_one, lookup_two);
 
 constexpr auto fourty_two   = lookup[12];
@@ -73,15 +73,15 @@ constexpr auto fourty_five  = lookup[15];
 ```c++
 #include <cmap.hpp>
 
-using cmap::make_map;
+using cmap::make_lookup;
 using cmap::map;
 
-constexpr auto lookup = make_map(
-  map('A', make_map(
+constexpr auto lookup = make_lookup(
+  map('A', make_lookup(
     map(12, 42),
     map(13, 43)
   )),
-  map('B', make_map(
+  map('B', make_lookup(
     map(14, 44),
     map(15, 45)
   ))
