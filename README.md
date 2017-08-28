@@ -57,11 +57,10 @@ constexpr mytype thirteen   = lookup_b[43];
 
 using cmap::make_lookup;
 using cmap::map;
-using cmap::join;
 
 constexpr auto lookup_one = make_lookup(map(12,42), map(13,43));
 constexpr auto lookup_two = make_lookup(map(14,44), map(15,45));
-constexpr auto lookup     = join(lookup_one, lookup_two);
+constexpr auto lookup     = make_lookup(lookup_one, lookup_two);
 
 constexpr auto fourty_two   = lookup[12];
 constexpr auto fourty_three = lookup[13];
