@@ -91,6 +91,17 @@ constexpr auto fourty_three = lookup['A'][13];
 constexpr auto fourty_four  = lookup['B'][14];
 constexpr auto fourty_five  = lookup['B'][15];
 ```
+### Functional API
+```c++
+#include <cmap.hpp>
+
+using cmap::make_map;
+using cmap::lookup;
+using cmap::map;
+
+constexpr auto config = make_map(map(12,42), map(13,43));
+const auto char my_array[ lookup(config, 12) ]; // Array with 42 elements
+```
 
 ## Installation ##
 Simply `#include <cmap.hpp>`.
