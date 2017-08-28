@@ -1,13 +1,12 @@
 #include <catch.hpp>
 #include <cmap.hpp>
 
-using cmap::make_map;
+using cmap::make_lookup;
 using cmap::map;
-using cmap::join;
 
 SCENARIO("Basic mapping") {
   GIVEN("a map of int -> int") {
-    constexpr auto lookup = make_map(
+    constexpr auto lookup = make_lookup(
         map(1,2),
         map(2,3),
 	map(5,7)
@@ -29,13 +28,13 @@ SCENARIO("Basic mapping") {
 
 SCENARIO("Usability") {
   GIVEN("a map of int -> int") {
-    constexpr auto lookup = make_map(
+    constexpr auto lookup = make_lookup(
         map(1,2),
         map(2,3),
         map(5,7)
     );
     THEN("the lookup can be joined with another lookup, left lookup has priority") {
-      constexpr auto combined = join(lookup, make_map(map(7,9), map(1,5)));
+      constexpr auto combined = make_lookup(lookup, make_lookup(map(7,9), map(1,5)));
       CHECK( combined[1] == 2  );
       CHECK( combined[2] == 3  );
       CHECK( combined[5] == 7  );
@@ -49,7 +48,7 @@ SCENARIO("Usability") {
       const int value;
     };
     GIVEN("a map of int -> custom type") {
-      constexpr auto lookup = make_map(
+      constexpr auto lookup = make_lookup(
           map(42, MyType{12}),
           map(43, MyType{13}),
           map(44, MyType{14})
@@ -62,7 +61,7 @@ SCENARIO("Usability") {
     }
 
     GIVEN("a map of custom type -> int") {
-      constexpr auto lookup = make_map(
+      constexpr auto lookup = make_lookup(
           map(MyType{12}, 42),
           map(MyType{13}, 43),
           map(MyType{14}, 44)
@@ -75,12 +74,12 @@ SCENARIO("Usability") {
     }
 	  
     GIVEN("a nested map") {
-      constexpr auto lookup = make_map(
-          map(1, make_map(
+      constexpr auto lookup = make_lookup(
+          map(1, make_lookup(
 		  map(10, 100),
 		  map(11, 101)
           )),
-	  map(2, make_map(
+	  map(2, make_lookup(
 		  map(12, 102),
 		  map(13, 103)
           ))
