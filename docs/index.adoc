@@ -119,3 +119,76 @@ constexpr auto make_branch = [](auto left, auto right) {
     };
 };
 ----
+
+=== ...
+polish with an API
+
+[%notitle]
+=== ...
+
+a compile time lookup table
+[source,c++]
+----
+constexpr auto lkup = make_lookup(
+  map('A',13),
+  map('B',55),
+  map('C',87)
+);
+
+const int my_native_array[ lkup['B'] ];
+----
+
+[%notitle]
+== ...
+image::amiga500.jpg[canvas,size=800px]
+
+[%notitle]
+=== ...
+C= Amiga 500
+
+[%step]
+* Released 1987
+* Motorola 68000 CPU
+* 7.16 MHz
+* 512 kB RAM
+* Native support for C++17 (after a lot of hacking)
+
+=== BSP
+
+[source,c++]
+----
+enum class Register {
+    PRA, PRB, DDRA, DDRB, TALO, TALHI, TBLO, TBHI,
+    TODLO, TODMID, TODHI, SDR, ICR, CRA, CRB
+};
+
+constexpr auto ciaa = make_lookup(
+    map(Register::PRA,    reg{0xBFE001, Width::B, Access::R}),
+    map(Register::PRB,    reg{0xBFE101, Width::B, Access::R}),
+    map(Register::DDRA,   reg{0xBFE201, Width::B, Access::R}),
+    map(Register::DDRB,   reg{0xBFE301, Width::B, Access::R}),
+    map(Register::TALO,   reg{0xBFE401, Width::B, Access::R}),
+    map(Register::TALHI,  reg{0xBFE501, Width::B, Access::R}),
+    ...
+----
+
+[%notitle]
+=== ...
+
+[source,c++]
+----
+write_w<COLOR17>(0x0444);
+write_w<COLOR18>(0x0999);
+write_w<COLOR19>(0x0FFF);  
+write_l<COP1LCH>(&copperlist);
+read_w<COPJMP1>();
+write_w<DMACON>(0x83A0);
+----
+* Compile time error writing to a RO register
+* Compile time error reading from a WO register
+* Compile time error reading/writing too many bits
+* Generates the smallest code possible, same performance as macros
+
+== DEMO HERE
+
+== Thanks for listening
