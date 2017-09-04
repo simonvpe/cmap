@@ -148,7 +148,8 @@ C= Amiga 500
 
 [%step]
 * Released 1987
-* Motorola 68000 CPU
+* Motorola 68000 CPU ( -> Freescale -> NXP )
+* 32 bit registers, 16 bit data bus
 * 7.16 MHz
 * 512 kB RAM
 * Native support for C++17 (after a lot of hacking)
