@@ -1,16 +1,121 @@
-= Title Slide
+:source-highlighter: highlightjs
 
-== Slide One
+== The art of manufacturing types
 
-* Foo
-* Bar
-* World
+Simon Pettersson +
+<http://simonvpe.github.io>
 
-== Slide Two
 
-Hello World - Good Bye Cruel World
+[%notitle]
+== Auto
 
-[NOTE.speaker]
---
-Actually things aren't that bad
---
+`auto`
+
+[%notitle]
+=== ...
+`c++03`
+[source,c++]
+----
+typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
+for (iterator it = self->classes_by_descriptor->begin();
+     it != self->classes_by_descriptor->end(); ++it) {
+    ...
+}
+----
+
+[%notitle]
+=== ...
+`c++11`
+[source,c++]
+----
+for(auto& item : *self->classes_by_descriptor)
+    ...
+}
+----
+
+[%notitle]
+=== ...
+`auto` all the things?
+
+[%notitle]
+=== ...
+was in signed, unsigned, 8/16/32/64 bits, happy? sad? +
+[source,c++]
+----
+auto square(auto arg)
+{ return arg*arg; }
+----
+¯\\_(ツ)_/¯
+
+[%notitle]
+=== ...
+no lambdas without `auto`
+[source,c++]
+----
+const auto lambda = [](int arg)
+{ return arg*arg; };
+----
+
+[%notitle]
+=== ...
+i knew all of this, where are you going?
+
+== Factories
+manufacture all the things!
+
+[%notitle]
+=== ...
+a brush factory
+[source,c++]
+----
+auto make_brush = [](color_t color) {
+    return [color](auto canvas) {
+        canvas.apply_color(color);
+    };
+};
+----
+
+[source,c++]
+----
+const auto paint_it_yellow = make_brush(yellow);
+paint_it_yellow(canvas);
+----
+
+[%notitle]
+=== ...
+can we combine it with `constexpr`?
+
+[%notitle]
+=== ...
+image::graph.png[canvas,size=800px]
+
+[%notitle]
+=== ...
+[source,c++]
+----
+struct outcome {
+    constexpr outcome(bool s, int v) : success{s}, value{v} {}
+    const bool success;
+    const int value;
+};
+----
+
+[%notitle]
+=== ...
+[source,c++]
+----
+constexpr auto make_terminal = [](int key, int value) {
+    return [key,value](const auto _key) -> outcome {
+        return { _key == key, value };
+    };
+};
+
+constexpr auto make_branch = [](auto left, auto right) {
+    return [left,right](int key) -> outcome {
+        const auto result = left(key);
+        if(result.success)
+            return {true, result.value};
+        return right(key);
+    };
+};
+----
