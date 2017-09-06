@@ -4,9 +4,7 @@
 
 [state=dimbg]
 == The art of manufacturing types
-
-Simon Pettersson +
-<http://simonvpe.github.io>
+image::art/lifestyle-2569539_1920.jpg[canvas]
 
 [state=dimbg]
 [%notitle]
