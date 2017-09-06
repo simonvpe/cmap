@@ -1,18 +1,23 @@
 :source-highlighter: highlightjs
+:customcss: dimbg.css
+:revealjs_backgroundTransition: slide
 
+[state=dimbg]
 == The art of manufacturing types
 
 Simon Pettersson +
 <http://simonvpe.github.io>
 
-
+[state=dimbg]
 [%notitle]
 == Auto
-
+image::art/movement-1392750_1920.jpg[canvas]
 `auto`
 
+[state=dimbg]
 [%notitle]
 === ...
+image::art/brush-1838983_1920.jpg[canvas]
 `c++03`
 [source,c++]
 ----
@@ -23,8 +28,10 @@ for (iterator it = self->classes_by_descriptor->begin();
 }
 ----
 
+[state=dimbg]
 [%notitle]
 === ...
+image::art/pawn-2430046_1920.jpg[canvas]
 `c++11`
 [source,c++]
 ----
@@ -33,13 +40,17 @@ for(auto& item : *self->classes_by_descriptor)
 }
 ----
 
+[state=dimbg]
 [%notitle]
 === ...
+image::art/universe-1044107_1920.jpg[canvas]
 `auto` all the things?
 
+[state=dimbg]
 [%notitle]
 === ...
-was in signed, unsigned, 8/16/32/64 bits, happy? sad? +
+image::art/lost-2607118_1920.jpg[canvas]
+was it signed, unsigned, 8/16/32/64 bits, happy? sad? +
 [source,c++]
 ----
 auto square(auto arg)
@@ -47,8 +58,10 @@ auto square(auto arg)
 ----
 ¯\\_(ツ)_/¯
 
+[state=dimbg]
 [%notitle]
 === ...
+image::art/consent-1971728_1920.jpg[canvas]
 no lambdas without `auto`
 [source,c++]
 ----
@@ -56,77 +69,87 @@ const auto lambda = [](int arg)
 { return arg*arg; };
 ----
 
+[state=dimbg]
 [%notitle]
 === ...
+image::art/old-books-436498_1920.jpg[canvas]
 i knew all of this, where are you going?
 
+[state=dimbg]
 == Factories
+image::art/architecture-1639990_1920.jpg[canvas]
 manufacture all the things!
 
+[state=dimbg]
 [%notitle]
 === ...
-a brush factory
+image::art/padlock-1346240_1920.jpg[canvas]
+a lock factory
+
 [source,c++]
 ----
-auto make_brush = [](color_t color) {
-    return [color](auto canvas) {
-        canvas.apply_color(color);
+constexpr auto make_lock(int key, int value)
+{
+    return [key,value](auto _key) -> pair<bool,int>
+    {
+        if(_key == key) return {true, value};
+	return {false, 0};
     };
 };
 ----
 
+[state=dimbg]
+[%notitle]
+=== ...
+image::art/padlock-1346240_1920.jpg[canvas]
+
 [source,c++]
 ----
-const auto paint_it_yellow = make_brush(yellow);
-paint_it_yellow(canvas);
+constexpr auto key = 42;
+constexpr auto my_lock = make_lock(key);
 ----
 
+[state=dimbg]
 [%notitle]
 === ...
-can we combine it with `constexpr`?
+image::art/padlock-1346240_1920.jpg[canvas]
 
-[%notitle]
-=== ...
-image::graph.png[canvas,size=800px]
-
-[%notitle]
-=== ...
 [source,c++]
 ----
-struct outcome {
-    constexpr outcome(bool s, int v) : success{s}, value{v} {}
-    const bool success;
-    const int value;
-};
+constexpr auto [success, value] = my_lock(key);
 ----
 
+[state=dimbg]
 [%notitle]
 === ...
-[source,c++]
-----
-constexpr auto make_terminal = [](int key, int value) {
-    return [key,value](const auto _key) -> outcome {
-        return { _key == key, value };
-    };
-};
+image::art/padlocks-337569_1920.jpg[canvas]
+what if we have one key, and want to try which lock it fits?
 
-constexpr auto make_branch = [](auto left, auto right) {
-    return [left,right](int key) -> outcome {
-        const auto result = left(key);
-        if(result.success)
-            return {true, result.value};
+[state=dimbg]
+[%notitle]
+=== ...
+image::art/tree-2649411_1920.jpg[canvas]
+
+[source,c+]
+----
+constexpr auto make_branch(auto left, auto right)
+{
+    return [left,right](int key) -> pair<bool,int>
+    {
+        if(const auto [success, value] = left(key); success) {
+	    return {true, value};
+        }
         return right(key);
     };
 };
 ----
 
-=== ...
-polish with an API
-
+[state=dimbg]
 [%notitle]
 === ...
+image::art/makeup-2479610_1920.jpg[canvas]
 
-a compile time lookup table
+with some makeup
 [source,c++]
 ----
 constexpr auto lkup = make_lookup(
@@ -140,55 +163,46 @@ const int my_native_array[ lkup['B'] ];
 
 [%notitle]
 == ...
-image::amiga500.jpg[canvas,size=800px]
+image::art/screenshot.png[canvas]
 
+[state=dimbg]
 [%notitle]
 === ...
-C= Amiga 500
-
-[%step]
-* Released 1987
-* Motorola 68000 CPU ( -> Freescale -> NXP )
-* 32 bit registers, 16 bit data bus
-* 7.16 MHz
-* 512 kB RAM
-* Native support for C++17 (after a lot of hacking)
-
-=== BSP
+image::art/pawn-2430046_1920.jpg[canvas]
 
 [source,c++]
 ----
-enum class Register {
-    PRA, PRB, DDRA, DDRB, TALO, TALHI, TBLO, TBHI,
-    TODLO, TODMID, TODHI, SDR, ICR, CRA, CRB
-};
-
 constexpr auto ciaa = make_lookup(
     map(Register::PRA,    reg{0xBFE001, Width::B, Access::R}),
     map(Register::PRB,    reg{0xBFE101, Width::B, Access::R}),
-    map(Register::DDRA,   reg{0xBFE201, Width::B, Access::R}),
-    map(Register::DDRB,   reg{0xBFE301, Width::B, Access::R}),
-    map(Register::TALO,   reg{0xBFE401, Width::B, Access::R}),
-    map(Register::TALHI,  reg{0xBFE501, Width::B, Access::R}),
     ...
+);
 ----
-
-[%notitle]
-=== ...
 
 [source,c++]
 ----
-write_w<COLOR17>(0x0444);
-write_w<COLOR18>(0x0999);
-write_w<COLOR19>(0x0FFF);  
-write_l<COP1LCH>(&copperlist);
-read_w<COPJMP1>();
-write_w<DMACON>(0x83A0);
+const auto value = read_w<ciaa[Register::PRA]>();
 ----
-* Compile time error writing to a RO register
-* Compile time error reading from a WO register
-* Compile time error reading/writing too many bits
-* Generates the smallest code possible, same performance as macros
+
+[state=dimbg]
+[%notitle]
+=== ...
+image::art/pawn-2430046_1920.jpg[canvas]
+
+[source,c++]
+----
+template<uint32_t reg_serialized>
+inline uint32_t read_l() {
+  constexpr auto r = reg{reg_serialized};
+  static_assert(
+      r.access() == Access::R || r.access() == Access::S
+  );
+  static_assert(
+      r.width() == Width::L
+  );
+  return *reinterpret_cast<volatile const uint32_t*>(r.address());
+}
+----
 
 == DEMO HERE
 
