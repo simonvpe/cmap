@@ -22,6 +22,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <optional>
 
 namespace cmap {
 
@@ -94,24 +95,19 @@ namespace _model {
     as it is copy constructible. That means that you can nest maps and store
     complex types.
   */
-  template<typename V> struct outcome {
-    constexpr outcome(bool s, const V v) : success{s}, value{v} {}
-    const bool success;
-    const V value;
-  };
 
   template<typename K, typename V>
   constexpr auto make_terminal(const K key, const V value) {
-    return [key,value](const auto _key) -> outcome<decltype(value)> {
-      return {_key == key, value};
+    return [key,value](const auto _key) {
+      return key == _key ? std::make_optional(value) : std::nullopt;
     };
   };
-
+  
   constexpr auto make_branch(const auto left, const auto right) {
     return [left,right](auto key) -> decltype(left(key)) {
       const auto result = left(key);
-      if(result.success) {
-        return {true, result.value};
+      if(result != std::nullopt) {
+        return result;
       }
       return right(key);
     };
@@ -146,7 +142,7 @@ constexpr auto map(const auto key, const auto value) {
   
 constexpr auto lookup(const auto tree, const auto key) {
   const auto result = tree(key);
-  return result.success ? result.value : throw std::out_of_range("No such key");
+  return result != std::nullopt ? result.value() : throw std::out_of_range("No such key");
 }
 
 /*
