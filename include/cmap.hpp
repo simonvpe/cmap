@@ -42,21 +42,19 @@ namespace _model {
              f4(k)  f5(k)
               
     Each subtree f1,f2,f3,f4,f5 is a function which
-    evaluates a key and returns an `outcome` which contains 
-    information about whether the subtree contained the key,
-    and in that case what the associated value was.
+    evaluates a key and returns an `std::optional` with a value if
+    the key matches a key in that subtree, or `std::nullopt` if there
+    was no match in that subtree.
 
     To construct the tree we utilize two factory functions
 
     * One called `make_terminal(k,v)` which creates a function that
-      evaluates a key and returns an whether it matches a particular
-      constant and the associated value.
+      evaluates a key and returns a std::optional.
 
     * One called `make_branch(left,right)` which creates a branch 
-      node, a function that first evaluats and returns the result of 
-      evaluating the left subtree if successful. If unsuccessful it 
-      evaluates the right subtree and returns the result of the 
-      evaluation of the right subtree.
+      node, a function that first evaluates the left subtree, if there
+      is a match the left subtree is returned. If unsuccessful it 
+      returns the right subtree.
 
     Example: Construct the tree above
 
