@@ -86,9 +86,9 @@ a lock factory
 
 [source,c++]
 ----
-constexpr auto make_lock(int key, int value) // -> (fn(int) -> optional<int>)
+constexpr auto make_lock(int key, int value) // -> (fn(int) -> std::optional<int>)
 {
-    return [key,value](auto _key) -> optional<int>
+    return [key,value](auto _key) -> std::optional<int>
     {
 	return key == _key ? std::make_optional(value) : std::nullopt;
     };
@@ -114,8 +114,8 @@ image::art/padlock-1346240_1920.jpg[canvas]
 
 [source,c++]
 ----
-static_assert( nullopt == my_lock(84) );
-static_assert( 1337    == my_lock(42) );
+static_assert( std::nullopt == my_lock(84) );
+static_assert( 1337         == my_lock(42) );
 ----
 
 [state=dimbg]
@@ -131,13 +131,13 @@ image::art/tree-2649411_1920.jpg[canvas]
 
 [source,c++]
 ----
-constexpr auto make_branch(auto left, auto right) // -> (fn -> optional<int>)
+constexpr auto make_branch(auto left, auto right) // -> (fn -> std::optional<int>)
 {
 
-    return [left,right](int key) -> optional<int>
+    return [left,right](int key) -> std::optional<int>
     {
 	const auto result = left(key)
-        if( result != nullopt )
+        if( result != std::nullopt )
 	    return result;
         }
         return right(key);
