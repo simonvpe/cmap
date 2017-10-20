@@ -25,7 +25,7 @@ image::art/brush-1838983_1920.jpg[canvas]
 ----
 typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
 for (iterator it = self->classes_by_descriptor->begin();
-     it != self->classes_by_descriptor->end(); ++it) {
+    it != self->classes_by_descriptor->end(); ++it) {
     ...
 }
 ----
@@ -94,7 +94,7 @@ constexpr auto make_lock(int key, int value) // -> (fn(int) -> std::optional<int
 {
     return [key,value](auto _key) -> std::optional<int>
     {
-	return key == _key ? std::make_optional(value) : std::nullopt;
+        return key == _key ? std::make_optional(value) : std::nullopt;
     };
 };
 ----
@@ -106,8 +106,8 @@ image::art/padlock-1346240_1920.jpg[canvas]
 
 [source,c++]
 ----
-constexpr auto key = 42;
-constexpr auto value = 1337;
+constexpr auto key     = 42;
+constexpr auto value   = 1337;
 constexpr auto my_lock = make_lock(key, value);
 ----
 
@@ -137,13 +137,12 @@ image::art/tree-2649411_1920.jpg[canvas]
 ----
 constexpr auto make_branch(auto left, auto right) // -> (fn(int) -> std::optional<int>)
 {
-
     return [left,right](int key) -> std::optional<int>
     {
-	const auto result = left(key)
+        const auto result = left(key)
         if( result != std::nullopt )
         {
-	    return result;
+            return result;
         }
         return right(key);
     };
@@ -159,9 +158,9 @@ with some makeup
 [source,c++]
 ----
 constexpr auto lkup = make_lookup(
-  map('A',13),
-  map('B',55),
-  map('C',87)
+    map('A',13),
+    map('B',55),
+    map('C',87)
 );
 
 const int my_native_array[ lkup['B'] ];
@@ -186,17 +185,18 @@ constexpr auto ciaa = make_lookup(
 template<uint32_t reg_serialized>
 inline uint32_t read_l() 
 {
-  constexpr auto r = reg{reg_serialized};
-  static_assert(
-      r.access() == Access::R
-  );
-  static_assert(
-      r.width() == Width::L
-  );
-  return *reinterpret_cast<volatile const uint32_t*>(r.address());
+    constexpr auto r = reg{reg_serialized};
+    static_assert(
+        r.access() == Access::R
+    );
+    static_assert(
+        r.width() == Width::L
+    );
+    return *reinterpret_cast<volatile const uint32_t*>(r.address());
 }
 
-const auto value = read_l<ciaa[Register::PRA]>();
+constexpr auto pra = ciaa[Register::PRA];
+const auto value   = read_l<pra>();
 ----
 
 == DEMO HERE
