@@ -12,6 +12,17 @@ image::art/screenshot.png[canvas]
 
 [state=dimbg]
 [%notitle]
+=== ...
+image::art/pawn-2430046_1920.jpg[canvas]
+
+[source,c++]
+----
+constexpr auto pra = ciaa[Register::PRA];
+const auto value   = read_l<pra>();
+----
+
+[state=dimbg]
+[%notitle]
 == Auto
 image::art/movement-1392750_1920.jpg[canvas]
 `auto`
