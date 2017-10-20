@@ -131,7 +131,7 @@ image::art/tree-2649411_1920.jpg[canvas]
 
 [source,c++]
 ----
-constexpr auto make_branch(auto left, auto right) // -> (fn -> std::optional<int>)
+constexpr auto make_branch(auto left, auto right) // -> (fn(int) -> std::optional<int>)
 {
 
     return [left,right](int key) -> std::optional<int>
