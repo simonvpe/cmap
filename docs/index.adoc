@@ -6,6 +6,10 @@
 == The art of manufacturing types
 image::art/lifestyle-2569539_1920.jpg[canvas]
 
+[%notitle]
+== ...
+image::art/screenshot.png[canvas]
+
 [state=dimbg]
 [%notitle]
 == Auto
@@ -162,10 +166,6 @@ constexpr auto lkup = make_lookup(
 const int my_native_array[ lkup['B'] ];
 ----
 
-[%notitle]
-== ...
-image::art/screenshot.png[canvas]
-
 [state=dimbg]
 [%notitle]
 === ...
@@ -194,7 +194,7 @@ inline uint32_t read_l() {
   return *reinterpret_cast<volatile const uint32_t*>(r.address());
 }
 
-const auto value = read_w<ciaa[Register::PRA]>();
+const auto value = read_l<ciaa[Register::PRA]>();
 ----
 
 == DEMO HERE
