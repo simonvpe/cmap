@@ -33,7 +33,7 @@ image::art/pawn-2430046_1920.jpg[canvas]
 `c++11`
 [source,c++]
 ----
-for(auto& item : *self->classes_by_descriptor)
+for(auto& item : *(self->classes_by_descriptor))
     ...
 }
 ----
@@ -86,12 +86,11 @@ a lock factory
 
 [source,c++]
 ----
-constexpr auto make_lock(int key, int value)
+constexpr auto make_lock(int key, int value) // -> (fn(int) -> optional<int>)
 {
-    return [key,value](auto _key) -> pair<bool,int>
+    return [key,value](auto _key) -> optional<int>
     {
-        if(_key == key) return {true, value};
-	return {false, 0};
+	return key == _key ? std::make_optional(value) : std::nullopt;
     };
 };
 ----
@@ -104,7 +103,8 @@ image::art/padlock-1346240_1920.jpg[canvas]
 [source,c++]
 ----
 constexpr auto key = 42;
-constexpr auto my_lock = make_lock(key);
+constexpr auto value = 1337;
+constexpr auto my_lock = make_lock(key, value);
 ----
 
 [state=dimbg]
@@ -114,7 +114,8 @@ image::art/padlock-1346240_1920.jpg[canvas]
 
 [source,c++]
 ----
-constexpr auto [success, value] = my_lock(key);
+static_assert( nullopt == my_lock(84) );
+static_assert( 1337    == my_lock(42) );
 ----
 
 [state=dimbg]
@@ -128,14 +129,16 @@ what if we have one key, and want to try which lock it fits?
 === ...
 image::art/tree-2649411_1920.jpg[canvas]
 
-[source,c+]
+[source,c++]
 ----
-constexpr auto make_branch(auto left, auto right)
+constexpr auto make_branch(auto left, auto right) // -> (fn -> optional<int>)
 {
-    return [left,right](int key) -> pair<bool,int>
+
+    return [left,right](int key) -> optional<int>
     {
-        if(const auto [success, value] = left(key); success) {
-	    return {true, value};
+	const auto result = left(key)
+        if( result != nullopt )
+	    return result;
         }
         return right(key);
     };
@@ -179,27 +182,19 @@ constexpr auto ciaa = make_lookup(
 
 [source,c++]
 ----
-const auto value = read_w<ciaa[Register::PRA]>();
-----
-
-[state=dimbg]
-[%notitle]
-=== ...
-image::art/pawn-2430046_1920.jpg[canvas]
-
-[source,c++]
-----
 template<uint32_t reg_serialized>
 inline uint32_t read_l() {
   constexpr auto r = reg{reg_serialized};
   static_assert(
-      r.access() == Access::R || r.access() == Access::S
+      r.access() == Access::R
   );
   static_assert(
       r.width() == Width::L
   );
   return *reinterpret_cast<volatile const uint32_t*>(r.address());
 }
+
+const auto value = read_w<ciaa[Register::PRA]>();
 ----
 
 == DEMO HERE
