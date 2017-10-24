@@ -228,6 +228,12 @@ const auto value   = read_l<pra>();
 const auto value = READ_LONG_REG(PRA);
 ----
 
+<iframe width="800px" height="200px"
+        src=></iframe>
+</body>
+[%notitle,background-iframe="https://godbolt.org/g/PeJJPg"]
+== Compiler explorer
+
 == Thanks for listening
 * https://github.com/simonvpe/amiga-bsp-example
 * https://github.com/simonvpe/cmap
