@@ -4,3 +4,6 @@
 [submodule "performance/nonius"]
 	path = performance/nonius
 	url = https://github.com/libnonius/nonius.git
+[submodule "docs/reveal.js"]
+	path = docs/reveal.js
+	url = https://github.com/hakimel/reveal.js.git

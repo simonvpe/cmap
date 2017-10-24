@@ -34,7 +34,9 @@ image::art/brush-1838983_1920.jpg[canvas]
 `c++03`
 [source,c++]
 ----
-typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
+typedef
+    PyMessageFactory::ClassesByMessageMap::iterator iterator;
+
 for (iterator it = self->classes_by_descriptor->begin();
     it != self->classes_by_descriptor->end(); ++it) {
     ...
@@ -101,11 +103,14 @@ a lock factory
 
 [source,c++]
 ----
-constexpr auto make_lock(int key, int value) // -> (fn(int) -> std::optional<int>)
-{
+constexpr auto make_lock(int key, int value) 
+{ // -> (fn(int) -> std::optional<int>)
+
     return [key,value](auto _key) -> std::optional<int>
     {
-        return key == _key ? std::make_optional(value) : std::nullopt;
+        return key == _key ? 
+            std::make_optional(value) :
+            std::nullopt;
     };
 };
 ----
@@ -146,8 +151,9 @@ image::art/tree-2649411_1920.jpg[canvas]
 
 [source,c++]
 ----
-constexpr auto make_branch(auto left, auto right) // -> (fn(int) -> std::optional<int>)
-{
+constexpr auto make_branch(auto left, auto right) 
+{ // -> (fn(int) -> std::optional<int>)
+
     return [left,right](int key) -> std::optional<int>
     {
         const auto result = left(key)
@@ -185,8 +191,8 @@ image::art/pawn-2430046_1920.jpg[canvas]
 [source,c++]
 ----
 constexpr auto ciaa = make_lookup(
-    map(Register::PRA,    reg{0xBFE001, Width::B, Access::R}),
-    map(Register::PRB,    reg{0xBFE101, Width::B, Access::R}),
+    map(Register::PRA, reg{0xBFE001, Width::B, Access::R}),
+    map(Register::PRB, reg{0xBFE101, Width::B, Access::R}),
     ...
 );
 ----
@@ -197,19 +203,31 @@ template<uint32_t reg_serialized>
 inline uint32_t read_l() 
 {
     constexpr auto r = reg{reg_serialized};
-    static_assert(
-        r.access() == Access::R
-    );
-    static_assert(
-        r.width() == Width::L
-    );
-    return *reinterpret_cast<volatile const uint32_t*>(r.address());
+    static_assert(r.access() == Access::R);
+    static_assert(r.width() == Width::L);
+    return *reinterpret_cast<volatile const uint32_t*>
+        (r.address());
 }
+----
 
+[state=dimbg]
+[%notitle]
+=== ...
+image::art/pawn-2430046_1920.jpg[canvas]
+
+[source,c++]
+----
 constexpr auto pra = ciaa[Register::PRA];
 const auto value   = read_l<pra>();
 ----
 
-== DEMO HERE
+[source, c++]
+----
+#define PRA 0xBFE001
+#define READ_LONG_REG(x) *((long *) (x))
+const auto value = READ_LONG_REG(PRA);
+----
 
 == Thanks for listening
+* https://github.com/simonvpe/amiga-bsp-example
+* https://github.com/simonvpe/cmap
